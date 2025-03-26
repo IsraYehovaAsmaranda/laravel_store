@@ -5,10 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\ProductCategory;
 use App\Http\Requests\StoreProductCategoryRequest;
 use App\Http\Requests\UpdateProductCategoryRequest;
+use App\Services\ProductCategoryService;
 use Illuminate\Http\Request;
 
 class ProductCategoryController extends Controller
 {
+    private ProductCategoryService $productCategoryService;
+
+    public function __construct(ProductCategoryService $productCategoryService)
+    {
+        $this->productCategoryService = $productCategoryService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -18,11 +25,10 @@ class ProductCategoryController extends Controller
             "size" => "numeric"
         ]);
 
-        $size = $request->size ?: 10;
         return response()->json([
             "status" => "success",
             "message" => "Product categories fetched successfully",
-            "data" => ProductCategory::paginate($size)
+            "data" => $this->productCategoryService->getAll($request)
         ]);
     }
     /**
@@ -30,11 +36,11 @@ class ProductCategoryController extends Controller
      */
     public function store(StoreProductCategoryRequest $request)
     {
-        $productCategory = ProductCategory::create($request->all());
+
         return response()->json([
             "status" => "success",
             "message" => "Product category created successfully",
-            "data" => $productCategory
+            "data" => $this->productCategoryService->create($request)
         ], 201);
     }
 
@@ -44,11 +50,10 @@ class ProductCategoryController extends Controller
     public function show($id)
     {
         try {
-            $productCategory = ProductCategory::findOrFail($id);
             return response()->json([
                 "status" => "success",
                 "message" => "Product category fetched successfully",
-                "data" => $productCategory
+                "data" => $this->productCategoryService->getById($id)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -64,14 +69,10 @@ class ProductCategoryController extends Controller
     public function update(UpdateProductCategoryRequest $request, $id)
     {
         try {
-            $productCategory = ProductCategory::findOrFail($id);
-            $productCategory->name = $request->name;
-            $productCategory->save();
-
             return response()->json([
                 "status" => "success",
                 "message" => "Product category updated successfully",
-                "data" => $productCategory
+                "data" => $this->productCategoryService->update($request, $id)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -84,9 +85,7 @@ class ProductCategoryController extends Controller
     public function destroy($id)
     {
         try {
-            $productCategory = ProductCategory::findOrFail($id);
-            $productCategory->delete();
-
+            $this->productCategoryService->delete($id);
             return response()->json([
                 "status" => "success",
                 "message" => "Product category deleted successfully"
