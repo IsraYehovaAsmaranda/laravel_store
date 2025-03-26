@@ -28,10 +28,12 @@ class AuthController extends Controller
         return response()->json([
             "status" => "success",
             "message" => "Registered successfully",
-            "user" => $user,
-            "authorization" => [
-                "token" => $token,
-                "type" => "Bearer"
+            "data" => [
+                "user" => $user,
+                "authorization" => [
+                    "token" => $token,
+                    "type" => "Bearer"
+                ]
             ]
         ], 201);
     }
@@ -57,11 +59,13 @@ class AuthController extends Controller
 
         return response()->json([
             "status" => "success",
-            "message" => "Registered successfully",
-            "user" => $user,
-            "authorization" => [
-                "token" => $token,
-                "type" => "Bearer"
+            "message" => "Logged in successfully",
+            "data" => [
+                "user" => $user,
+                "authorization" => [
+                    "token" => $token,
+                    "type" => "Bearer"
+                ]
             ]
         ], 201);
     }
@@ -81,10 +85,12 @@ class AuthController extends Controller
         return response()->json([
             "status" => "success",
             "message" => "Token refreshed",
-            "user" => Auth::user(),
-            "authorization" => [
-                "token" => Auth::refresh(),
-                "type" => "Bearer"
+            "data" => [
+                "user" => Auth::user(),
+                "authorization" => [
+                    "token" => Auth::refresh(),
+                    "type" => "Bearer"
+                ]
             ]
         ]);
     }
