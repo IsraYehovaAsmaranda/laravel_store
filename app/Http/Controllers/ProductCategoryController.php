@@ -81,4 +81,21 @@ class ProductCategoryController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        try {
+            $productCategory = ProductCategory::findOrFail($id);
+            $productCategory->delete();
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Product category deleted successfully"
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Product category not found"
+            ], 404);
+        }
+    }
 }
