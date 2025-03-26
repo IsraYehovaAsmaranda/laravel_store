@@ -91,10 +91,12 @@ class ProductCategoryController extends Controller
                 "message" => "Product category deleted successfully"
             ]);
         } catch (\Throwable $th) {
+            $message = isset($th->errorInfo) ? "Cannot delete this product category. This product category is used in a product" : "Product not found";
+            $errorCode = isset($th->errorInfo) ? 409 : 404;
             return response()->json([
                 "status" => "error",
-                "message" => "Product category not found"
-            ], 404);
+                "message" => $message
+            ], $errorCode);
         }
     }
 }

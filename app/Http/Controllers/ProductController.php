@@ -67,7 +67,7 @@ class ProductController extends Controller
             return response()->json([
                 "status" => "error",
                 "message" => "Product Not Found",
-            ]);
+            ], 404);
         }
     }
 
@@ -93,7 +93,7 @@ class ProductController extends Controller
             return response()->json([
                 "status" => "error",
                 "message" => "Product Not Found",
-            ]);
+            ], 404);
         }
     }
 
@@ -112,7 +112,7 @@ class ProductController extends Controller
             return response()->json([
                 "status" => "error",
                 "message" => "Product Not Found",
-            ]);
+            ], 404);
         }
     }
 }
