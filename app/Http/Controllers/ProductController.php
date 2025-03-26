@@ -5,22 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    private ProductService $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $size = $request->query("size") ?: 10;
-        $products = Product::with("productCategory")->paginate($size);
+        $request->validate([
+            "size" => "numeric"
+        ]);
+
         return response()->json([
             "status" => "success",
             "message" => "Products fetched successfully",
-            "data" => $products
+            "data" => $this->productService->getAll($request)
         ]);
     }
 
@@ -36,19 +45,10 @@ class ProductController extends Controller
             ]);
         }
 
-        $path = "product-images";
-        $image = $request->file("image")->store($path);
-        $product = Product::create([
-            "product_category_id" => $request->product_category_id,
-            "name" => $request->name,
-            "price" => $request->price,
-            "image" => str_replace($path . "/", "", $image),
-        ]);
-
         return response()->json([
             "status" => "success",
             "message" => "Product created successfully",
-            "data" => $product->with("productCategory")
+            "data" => $this->productService->create($request)
         ]);
     }
 
@@ -58,16 +58,15 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product = Product::findOrFail($id)->with("productCategory")->first();
             return response()->json([
                 "status" => "success",
                 "message" => "Product fetched successfully",
-                "data" => $product
+                "data" => $this->productService->getById($id)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 "status" => "error",
-                "message" => $th->getMessage(),
+                "message" => "Product Not Found",
             ]);
         }
     }
@@ -85,28 +84,15 @@ class ProductController extends Controller
         }
 
         try {
-            $product = Product::with("productCategory")->findOrFail($id);
-            if (Storage::exists("product-images/" . $product->image)) {
-                Storage::delete("product-images/" . $product->image);
-            }
-
-            $path = "product-images";
-            $image = $request->file("image")->store($path);
-
-            $product->name = $request->name;
-            $product->price = $request->price;
-            $product->image = str_replace("product-images/", "", $image);
-            $product->save();
-
             return response()->json([
                 "status" => "success",
                 "message" => "Product updated successfully",
-                "data" => $product
+                "data" => $this->productService->update($request, $id)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 "status" => "error",
-                "message" => $th->getMessage(),
+                "message" => "Product Not Found",
             ]);
         }
     }
@@ -117,21 +103,15 @@ class ProductController extends Controller
     public function destroy($id)
     {
         try {
-            $product = Product::findOrFail($id);
-            if (Storage::exists("product-images/" . $product->image)) {
-                Storage::delete("product-images/" . $product->image);
-            }
-
-            $product->delete();
+            $this->productService->delete($id);
             return response()->json([
                 "status" => "success",
                 "message" => "Product deleted successfully",
             ]);
-
         } catch (\Throwable $th) {
             return response()->json([
                 "status" => "error",
-                "message" => $th->getMessage(),
+                "message" => "Product Not Found",
             ]);
         }
     }
